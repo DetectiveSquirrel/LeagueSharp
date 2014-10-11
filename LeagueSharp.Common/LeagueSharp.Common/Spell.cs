@@ -194,6 +194,18 @@ namespace LeagueSharp.Common
             }
         }
 
+        /// <summary>
+        /// Start charging the spell if its not charging.
+        /// </summary>
+        public void StartCharging(Vector3 position)
+        {
+            if (!IsCharging && Environment.TickCount - _chargedReqSentT > 400 + Game.Ping)
+            {
+                ObjectManager.Player.Spellbook.CastSpell(SpellSlot.Q, position);
+                _chargedReqSentT = Environment.TickCount;
+            }
+        }
+
         private void Game_OnGameSendPacket(GamePacketEventArgs args)
         {
             if (args.PacketData[0] == Packet.C2S.ChargedCast.Header && Environment.TickCount - _chargedReqSentT < 3000)
@@ -434,7 +446,7 @@ namespace LeagueSharp.Common
                 {
                     Packet.C2S.ChargedCast.Encoded(
                         new Packet.C2S.ChargedCast.Struct(
-                            (SpellSlot) (0x80 + (byte) Slot), position.X, position.Z, position.Y)).Send();
+                            (SpellSlot) ((byte) Slot), position.X, position.Z, position.Y)).Send();
                 }
                 else
                 {
@@ -459,7 +471,7 @@ namespace LeagueSharp.Common
         {
             var currentHitchance = MinHitChange;
             MinHitChange = hitChance;
-            var castResult = _cast(unit, packetCast, false, true);
+            var castResult = _cast(unit, packetCast, false, false);
             MinHitChange = currentHitchance;
             return castResult == CastStates.SuccessfullyCasted;
         }
