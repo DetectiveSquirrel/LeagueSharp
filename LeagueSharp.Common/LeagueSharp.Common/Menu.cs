@@ -106,7 +106,7 @@ namespace LeagueSharp.Common
 
     internal static class MenuSettings
     {
-        public static Vector2 BasePosition = new Vector2(88, 127);
+        public static Vector2 BasePosition = new Vector2(88, 126);
         public static List<Color> ColorList = new List<Color>();
         public static Color BooleanOnColor = Color.FromArgb(150, Color.Green);
         public static Color BooleanOffColor = Color.FromArgb(150, Color.Red);
