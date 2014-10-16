@@ -1,4 +1,4 @@
-#region LICENSE
+﻿#region LICENSE
 
 /*
  Copyright 2014 - 2014 LeagueSharp
@@ -472,7 +472,7 @@ namespace LeagueSharp.Common
             /// <summary>
             ///     Enables or disables the auto-attacks.
             /// </summary>
-            [Obsolete("Use SetAttack", true)]
+            [Obsolete("Use SetAttack")]
             public void SetAttacks(bool b)
             {
                 Attack = b;

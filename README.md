@@ -16,24 +16,6 @@ https://github.com/LeagueSharp/LeagueSharpCommon
 
 
 
-Hellsing
-===========
-https://github.com/Hellsing/LeagueSharp
-<h5>VeigarEndboss:</h5>
-- Added Toggle key for Auto Q Stack.
-- Added Auto KS, should not overkill.
-- Added better baby cage logic from simpai.
-
-
-
-trelli
-===========
-https://github.com/trelli/LeagueSharp
-<h5>Skin Changer:</h5>
-- Changed button to on press (only need to press once to change skin).
-
-
-
 Beaving
 ===========
 https://github.com/Beaving/LeagueSharp
@@ -50,14 +32,12 @@ https://github.com/Lizzaran/LeagueSharp
 <h5>MapHack:</h5>
 - Added Black text for a shadow effect to make it easier on my eyes.
 
-<h5>JungleTimers:</h5>
-- Added Black text for a shadow effect to make it easier on my eyes.
 
 
 
-
-TC-Crew
+shalzuth
 ===========
-https://github.com/TC-Crew/L-Assemblies
-<h5>Tracker:</h5>
-- Option to disable minimap ward drawing.
+https://github.com/shalzuth/JungleTimerHax
+<h5>JungleTimerHax:</h5>
+- Added black outline to the timers.
+- Changed timer text to Cyan.
