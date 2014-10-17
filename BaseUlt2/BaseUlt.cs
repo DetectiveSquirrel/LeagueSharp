@@ -37,6 +37,7 @@ namespace BaseUlt2
             _menu.AddItem(new MenuItem("extraDelay1", "Extra Delay").SetValue(new Slider(0, -2000, 2000)));
             _menu.AddItem(new MenuItem("panicKey1", "Panic key (hold for disable)").SetValue(new KeyBind(32, KeyBindType.Press))); //32 == space
             _menu.AddItem(new MenuItem("regardlessKey1", "No timelimit (hold)").SetValue(new KeyBind(17, KeyBindType.Press))); //17 == ctrl
+            _menu.AddItem(new MenuItem("TextColor", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
 
             var teamUlt = _menu.AddSubMenu(new Menu("Team Baseult Friends", "TeamUlt"));
 
@@ -153,7 +154,9 @@ namespace BaseUlt2
                 //draw progress bar
                 //show circle on minimap on recall
 
-                Drawing.DrawText(Drawing.Width * 0.73f, Drawing.Height * 0.88f + (index * 15f), Color.Lime, playerInfo.RecallInfo.ToString());
+                var TextColor = _menu.Item("TextColor").GetValue<Circle>();
+
+                Drawing.DrawText(Drawing.Width * 0.73f, Drawing.Height * 0.88f + (index * 15f), TextColor.Color, playerInfo.RecallInfo.ToString());
             }
         }
 

@@ -20,7 +20,7 @@ Beaving
 ===========
 https://github.com/Beaving/LeagueSharp
 <h5>BaseUlt2:</h5>
-- Changed Text to Green not red hurt my eyes.
+- Added Color Picker for full customisation.
 - Changed code to not use same save config from the one in UltimateCarry.
 
 
@@ -30,14 +30,4 @@ Lizzaran
 ===========
 https://github.com/Lizzaran/LeagueSharp
 <h5>MapHack:</h5>
-- Added Black text for a shadow effect to make it easier on my eyes.
-
-
-
-
-shalzuth
-===========
-https://github.com/shalzuth/JungleTimerHax
-<h5>JungleTimerHax:</h5>
-- Added black outline to the timers.
-- Changed timer text to Cyan.
+- Added Color Picker for full customisation.
