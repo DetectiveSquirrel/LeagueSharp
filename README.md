@@ -31,3 +31,6 @@ Lizzaran
 https://github.com/Lizzaran/LeagueSharp
 <h5>MapHack:</h5>
 - Added Color Picker for full customisation.
+
+<h5>Jungle Timers:</h5>
+- Added Color Picker for full customisation.
