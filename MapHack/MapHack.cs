@@ -4,7 +4,9 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using LeagueSharp;
+using LeagueSharp.Common;
 using SharpDX;
+using Color = System.Drawing.Color;
 
 /*
     Copyright (C) 2014 Nikita Bernthaler
@@ -27,6 +29,7 @@ namespace MapHack
 {
     internal class MapHack
     {
+        public static Menu Config;
         private readonly List<Hero> _heroes = new List<Hero>();
 
         private readonly Action _onLoadAction;
@@ -47,6 +50,9 @@ namespace MapHack
                     Assembly.GetExecutingAssembly().GetName().Version
                     )
                 );
+            (Config = new Menu("MapHack", "Map Hack", true)).AddToMainMenu();
+            Config.AddItem(new MenuItem("TextColor", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
+            Config.AddItem(new MenuItem("OutlineColor", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
         }
 
         private void OnGameUpdate(EventArgs args)
@@ -92,23 +98,15 @@ namespace MapHack
                     {
                         Vector2 pos = Drawing.WorldToMinimap(hero.LastPosition);
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 6,
-                            System.Drawing.Color.Black,
-                            hero.Name.Substring(0, 3));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 8,
-                            System.Drawing.Color.Black,
-                            hero.Name.Substring(0, 3));
+                        var OutlineColor = Config.Item("OutlineColor").GetValue<Circle>();
+                        var TextColor = Config.Item("TextColor").GetValue<Circle>();
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 6,
-                            System.Drawing.Color.Black,
-                            hero.Name.Substring(0, 3));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 8,
-                            System.Drawing.Color.Black,
-                            hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5), pos.Y - 7,
-                            System.Drawing.Color.Lime,
-                            hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5), pos.Y - 7, TextColor.Color, hero.Name.Substring(0, 3));
                     }
                 }
             }
