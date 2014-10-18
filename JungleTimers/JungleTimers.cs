@@ -218,8 +218,8 @@ namespace JungleTimers
                 );
 
             (Config = new Menu("JungleTimers", "Jungle Timers", true)).AddToMainMenu();
-            Config.AddItem(new MenuItem("TextColor", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
-            Config.AddItem(new MenuItem("OutlineColor", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
+            Config.AddItem(new MenuItem("TextColorJT", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
+            Config.AddItem(new MenuItem("OutlineColorJT", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
         }
 
         private void OnGameUpdate(EventArgs args)
@@ -250,8 +250,8 @@ namespace JungleTimers
                             Vector2 pos = Drawing.WorldToMinimap(minionCamp.Position);
                             string display = string.Format("{0}:{1:D2}", time.Minutes, time.Seconds);
 
-                            var OutlineColor = Config.Item("OutlineColor").GetValue<Circle>();
-                            var TextColor = Config.Item("TextColor").GetValue<Circle>();
+                            var OutlineColor = Config.Item("OutlineColorJT").GetValue<Circle>();
+                            var TextColor = Config.Item("TextColorJT").GetValue<Circle>();
 
 
                             Drawing.DrawText(pos.X - display.Length*3 - 1, pos.Y - 4, OutlineColor.Color, display);
