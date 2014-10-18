@@ -51,8 +51,8 @@ namespace MapHack
                     )
                 );
             (Config = new Menu("MapHack", "Map Hack", true)).AddToMainMenu();
-            Config.AddItem(new MenuItem("TextColor", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
-            Config.AddItem(new MenuItem("OutlineColor", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
+            Config.AddItem(new MenuItem("TextColorMH", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
+            Config.AddItem(new MenuItem("OutlineColoMHr", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
         }
 
         private void OnGameUpdate(EventArgs args)
@@ -98,8 +98,8 @@ namespace MapHack
                     {
                         Vector2 pos = Drawing.WorldToMinimap(hero.LastPosition);
 
-                        var OutlineColor = Config.Item("OutlineColor").GetValue<Circle>();
-                        var TextColor = Config.Item("TextColor").GetValue<Circle>();
+                        var OutlineColor = Config.Item("OutlineColorMH").GetValue<Circle>();
+                        var TextColor = Config.Item("TextColorMH").GetValue<Circle>();
 
                         Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
                         Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
