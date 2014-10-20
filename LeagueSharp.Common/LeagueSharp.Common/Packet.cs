@@ -28,6 +28,7 @@
 
 using System;
 using System.Collections.Generic;
+using SharpDX;
 
 #endregion
 
@@ -35,6 +36,13 @@ namespace LeagueSharp.Common
 {
     public static class Packet
     {
+        public enum AttackTypePacket
+        {
+            Circular = 0,
+            ConeSkillShot = 1, // Cone and Skillshot spells
+            TargetedAA = 2, // Targeted spells and AAs
+        }
+
         public enum DamageTypePacket
         {
             Magical = 4,
@@ -80,6 +88,31 @@ namespace LeagueSharp.Common
             Debug
         }
 
+        public enum MultiPacketType
+        {
+            Unknown100 = 0x00,
+            Unknown101 = 0x01,
+            Unknown102 = 0x02,
+            Unknown104 = 0x04,
+            Unknown109 = 0x09,
+            Unknown115 = 0x15, // confirmed in ida
+            Unknown116 = 0x16,
+            Unknown11A = 0x1A,
+            Unknown11E = 0x1E,
+            Unknown124 = 0x24, // confirmed in ida
+            Unknown127 = 0x27, // ?? triggers on respawn
+            InitSpell = 0x07,
+            RefundToken = 0x0B,
+            RefundConfirm = 0x0C,
+            OnAttack = 0x0F,
+            SurrenderState = 0x0E,
+            DeathTimer = 0x17,
+            ItemSubsitution = 0x1C,
+            ActionState = 0x21, // ?? triggers on recall
+            SpawnTurret = 0x23, // confirmed in ida
+            Unknown = 0xFF, // Default, not real packet
+        }
+
         public enum PingType
         {
             Normal = 1,
@@ -97,6 +130,7 @@ namespace LeagueSharp.Common
             FallbackSound = 5,
             AssistMeSound = 6,
         }
+
 
         public static class C2S
         {
@@ -698,6 +732,359 @@ namespace LeagueSharp.Common
                     public Obj_AI_Base Unit;
                 }
             }
+
+            #endregion
+        }
+
+        public static class MultiPacket
+        {
+            #region INFO
+
+            /*
+             * This is the MultiPacket packet. 
+             * Packets in LoL are restricted to one byte i.e. (0-254) or (0 - 0xFE). 
+             * Riot needed to add more packets, but couldn't add anymore headers.
+             * The new packets are being added to 0xFE with a sub-header in order to be identified. 
+             */
+
+            #endregion
+
+            public static byte Header = 0xFE;
+
+            public static Struct DecodeHeader(byte[] data)
+            {
+                var packet = new GamePacket(data);
+
+                var networkId = packet.ReadInteger(1);
+                var subHeader = packet.ReadByte(5);
+
+                return Enum.GetName(typeof(MultiPacketType), subHeader) == null
+                    ? new Struct(networkId, MultiPacketType.Unknown, subHeader)
+                    : new Struct(networkId, (MultiPacketType) subHeader);
+            }
+
+            public struct Struct
+            {
+                public int NetworkId;
+                public byte SubHeader;
+                public MultiPacketType Type;
+
+                public Struct(int networkId, MultiPacketType type, byte subHeader = 0xFF)
+                {
+                    NetworkId = networkId;
+                    Type = type;
+                    SubHeader = subHeader == 0xFF ? (byte) type : subHeader;
+                }
+            }
+
+            #region OnAttack
+
+            /// <summary>
+            /// Received when attacking or casting a spell on a unit.'
+            /// This packet comes before 0xB5 (S2C.Cast)
+            /// The attack can be cancelled and the packet will still be received.
+            /// </summary>
+            public static class OnAttack
+            {
+                public static byte SubHeader = (byte) MultiPacketType.OnAttack;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var returnStruct = new ReturnStruct
+                    {
+                        Type = (AttackTypePacket) packet.ReadByte(7),
+                        Position = new Vector3(packet.ReadFloat(), packet.ReadFloat(16), packet.ReadFloat(12)),
+                        TargetNetworkId = packet.ReadInteger(20)
+                    };
+
+                    return returnStruct;
+                }
+
+                public struct ReturnStruct
+                {
+                    public Vector3 Position;
+                    public int TargetNetworkId;
+                    public AttackTypePacket Type;
+                }
+            }
+
+            #endregion
+
+            #region SurrenderState
+
+            /// <summary>
+            /// Received when surrender is available.
+            /// </summary>
+            public static class SurrenderState
+            {
+                public static byte SubHeader = (byte) MultiPacketType.SurrenderState;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    return new ReturnStruct(data[7] == 0x01);
+                }
+
+                public struct ReturnStruct
+                {
+                    public bool CanSurrender;
+
+                    public ReturnStruct(bool canSurrender)
+                    {
+                        CanSurrender = canSurrender;
+                    }
+                }
+            }
+
+            #endregion
+
+            #region RefundAmount
+
+            /// <summary>
+            /// Refund token contains refund amount, when leaving base or casting spell/item it's set to 0.
+            /// </summary>
+            public static class RefundToken
+            {
+                public static byte SubHeader = (byte) MultiPacketType.RefundToken;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    return new ReturnStruct { RefundAmount = data[7] };
+                }
+
+                public struct ReturnStruct
+                {
+                    public int RefundAmount;
+                }
+            }
+
+            #endregion
+
+            #region DeathTimer
+
+            /// <summary>
+            /// Contains death timer for hero.
+            /// </summary>
+            public static class DeathTimer
+            {
+                public static byte SubHeader = (byte) MultiPacketType.DeathTimer;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var hero = ObjectManager.GetUnitByNetworkId<Obj_AI_Hero>(packet.ReadInteger(1));
+                    return new ReturnStruct { Time = packet.ReadFloat(7), Hero = hero };
+                }
+
+                public struct ReturnStruct
+                {
+                    public Obj_AI_Hero Hero;
+                    public float Time;
+                }
+            }
+
+            #endregion
+
+            #region Unknown
+
+            #region Unknown100
+
+            /// <summary>
+            /// Unknown, ?? "Marker"
+            /// Struct from ida
+            /// </summary>
+            public static class Unknown100
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown100;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    packet.Position = 12;
+                    // these floats are probably a position
+                    var unknownFloat1 = packet.ReadFloat();
+                    var unknownFloat2 = packet.ReadFloat();
+                    var unknownFloat3 = packet.ReadFloat();
+                    return new ReturnStruct
+                    {
+                        UnknownNetworkId = unknownNetworkId,
+                        UnknownFloats = new[] { unknownFloat1, unknownFloat2, unknownFloat3 }
+                    };
+                }
+
+                public struct ReturnStruct
+                {
+                    public float[] UnknownFloats;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region Unknown101
+
+            /// <summary>
+            /// Unknown
+            /// Struct from ida, this packet almost identical to 0xD7/0x102
+            /// </summary>
+            public static class Unknown101
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown101;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    var unknownByte = packet.ReadByte();
+                    return new ReturnStruct { UnknownNetworkId = unknownNetworkId, UnknownByte = unknownByte };
+                }
+
+                public struct ReturnStruct
+                {
+                    public byte UnknownByte;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region Unknown102
+
+            /// <summary>
+            /// Unknown
+            /// Struct from ida, this packet almost identical to 0xD7/0x101
+            /// </summary>
+            public static class Unknown102
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown102;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    var unknownByte = packet.ReadByte();
+                    return new ReturnStruct { UnknownNetworkId = unknownNetworkId, UnknownByte = unknownByte };
+                }
+
+                public struct ReturnStruct
+                {
+                    public byte UnknownByte;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region Unknown104
+
+            /// <summary>
+            /// Unknown
+            /// Struct from ida, this packet is related to spell slots.
+            /// </summary>
+            public static class Unknown104
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown104;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    var unknownByte = packet.ReadByte();
+                    return new ReturnStruct { UnknownNetworkId = unknownNetworkId, UnknownByte = unknownByte };
+                }
+
+                public struct ReturnStruct
+                {
+                    public byte UnknownByte;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region Unknown115
+
+            /// <summary>
+            /// Unknown
+            /// Struct from ida
+            /// </summary>
+            public static class Unknown115
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown115;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    var unknownByte = packet.ReadByte();
+                    return new ReturnStruct { UnknownNetworkId = unknownNetworkId, UnknownByte = unknownByte };
+                }
+
+                public struct ReturnStruct
+                {
+                    public byte UnknownByte;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region Unknown124
+
+            /// <summary>
+            /// Unknown
+            /// Struct from ida
+            /// </summary>
+            public static class Unknown124
+            {
+                public static byte SubHeader = (byte) MultiPacketType.Unknown124;
+
+                public static ReturnStruct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7);
+                    return new ReturnStruct { UnknownNetworkId = unknownNetworkId };
+                }
+
+                public struct ReturnStruct
+                {
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
+
+            #region SpawnTurret
+
+            /// <summary>
+            /// SpawnTurret
+            /// Struct from ida
+            /// </summary>
+            public static class SpawnTurret
+            {
+                public static byte SubHeader = (byte) MultiPacketType.SpawnTurret;
+
+                public static void Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var unknownNetworkId = packet.ReadInteger(7); // Node ID??
+                    var unknownNetworkId2 = packet.ReadInteger(); // Object ID??
+                    var unknownByte = packet.ReadByte();
+                    var name = packet.ReadString();
+                    var skin = packet.ReadString(80);
+                    var skinID = packet.ReadInteger(144);
+                    var unknownShort = packet.ReadShort(165);
+                }
+
+                public struct ReturnStruct
+                {
+                    public float[] UnknownFloats;
+                    public int UnknownNetworkId;
+                }
+            }
+
+            #endregion
 
             #endregion
         }
