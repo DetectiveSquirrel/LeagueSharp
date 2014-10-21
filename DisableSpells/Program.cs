@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -75,16 +75,24 @@ namespace DisableSpells
                 select hero)
             {
                 if (Config.Item("qqSpell").GetValue<bool>())
+                {
                     Packet.C2S.Cast.Encoded(new Packet.C2S.Cast.Struct(hero.NetworkId, SpellSlot.Q)).Send();
+                }
 
                 if (Config.Item("wwSpell").GetValue<bool>())
+                {
                     Packet.C2S.Cast.Encoded(new Packet.C2S.Cast.Struct(hero.NetworkId, SpellSlot.W)).Send();
+                }
 
                 if (Config.Item("eeSpell").GetValue<bool>())
+                {
                     Packet.C2S.Cast.Encoded(new Packet.C2S.Cast.Struct(hero.NetworkId, SpellSlot.E)).Send();
+                }
 
                 if (Config.Item("rrSpell").GetValue<bool>())
+                {
                     Packet.C2S.Cast.Encoded(new Packet.C2S.Cast.Struct(hero.NetworkId, SpellSlot.R)).Send();
+                }
             }
         }
     }
