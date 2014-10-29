@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using SharpDX;
 using Color = System.Drawing.Color;
 
@@ -38,18 +39,45 @@ namespace LeagueSharp.Common
     /// </summary>
     public static class Utility
     {
+        private const int STD_INPUT_HANDLE = -10;
+        private const int ENABLE_QUICK_EDIT_MODE = 0x40 | 0x80;
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out int mode);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetStdHandle(int handle);
+
+        /// <summary>
+        /// Allows text in the console to be selected and copied.
+        /// <summary>
+        public static void EnableConsoleEditMode()
+        {
+            int mode;
+            var handle = GetStdHandle(STD_INPUT_HANDLE);
+            GetConsoleMode(handle, out mode);
+            mode |= ENABLE_QUICK_EDIT_MODE;
+            SetConsoleMode(handle, mode);
+        }
+
         /// <summary>
         /// Returns if the source is facing the target.
         /// <summary>
         public static bool IsFacing(this Obj_AI_Base source, Obj_AI_Base target, float lineLength = 300)
         {
             if (source == null || target == null)
+            {
                 return false;
+            }
 
             return
-                target.Distance(Vector2.Add(new Vector2(source.Position.X, source.Position.Y),
-                    (Vector2
-                        .Subtract(
+                target.Distance(
+                    Vector2.Add(
+                        new Vector2(source.Position.X, source.Position.Y),
+                        (Vector2.Subtract(
                             new Vector2(source.ServerPosition.X, source.ServerPosition.Y),
                             new Vector2(source.Position.X, source.Position.Y)).Normalized() * (target.Distance(source))))) <=
                 lineLength;
@@ -60,9 +88,7 @@ namespace LeagueSharp.Common
         /// </summary>
         public static bool IsBothFacing(Obj_AI_Base source, Obj_AI_Base target, float lineLength)
         {
-            return source.IsFacing(target, lineLength)
-                   && target.IsFacing
-                       (source, lineLength);
+            return source.IsFacing(target, lineLength) && target.IsFacing(source, lineLength);
         }
 
         /// <summary>
@@ -95,7 +121,7 @@ namespace LeagueSharp.Common
             return true;
         }
 
-        public static void HighlightUnit(Obj_AI_Base unit, bool showHighlight = true)
+        public static void Highlight(this Obj_AI_Base unit, bool showHighlight = true)
         {
             if (showHighlight)
             {
@@ -112,7 +138,17 @@ namespace LeagueSharp.Common
             Packet.S2C.DebugMessage.Encoded(debugMessage).Process();
         }
 
-        public static void PrintFloatText(GameObject obj, string text, Packet.FloatTextPacket type)
+        public static void DumpPacket(this GamePacket packet, bool printChat = false)
+        {
+            var p = packet.Dump();
+            Console.WriteLine(p);
+            if (printChat)
+            {
+                Game.PrintChat(p);
+            }
+        }
+
+        public static void PrintFloatText(this GameObject obj, string text, Packet.FloatTextPacket type)
         {
             Packet.S2C.FloatText.Encoded(new Packet.S2C.FloatText.Struct(text, type, obj.NetworkId)).Process();
         }
@@ -166,14 +202,14 @@ namespace LeagueSharp.Common
 
         public static byte[] GetBytes(string str)
         {
-            var bytes = new byte[str.Length * sizeof(char)];
+            var bytes = new byte[str.Length * sizeof (char)];
             Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
             return bytes;
         }
 
         public static string GetString(byte[] bytes)
         {
-            var chars = new char[bytes.Length / sizeof(char)];
+            var chars = new char[bytes.Length / sizeof (char)];
             Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
             return new string(chars);
         }
@@ -269,7 +305,7 @@ namespace LeagueSharp.Common
                 var timePassed = (Environment.TickCount - WaypointTracker.StoredTick[unit.NetworkId]) / 1000f;
                 if (path.PathLength() >= unit.MoveSpeed * timePassed)
                 {
-                    result = CutPath(path, (int)(unit.MoveSpeed * timePassed));
+                    result = CutPath(path, (int) (unit.MoveSpeed * timePassed));
                 }
             }
 
@@ -363,21 +399,43 @@ namespace LeagueSharp.Common
         /// </summary>
         public static int CountEnemysInRange(int range)
         {
-            return CountEnemysInRange(range, ObjectManager.Player);
+            return ObjectManager.Player.CountEnemysInRange(range);
         }
 
         /// <summary>
         /// Counts the enemies in range of Unit.
         /// </summary>
+        [Obsolete("Use CountEnemysInRange(this Obj_AI_Base, int range)", false)]
         public static int CountEnemysInRange(int range, Obj_AI_Base unit)
         {
-            return CountEnemysInRange(range, ObjectManager.Player.ServerPosition);
+            return ObjectManager.Player.ServerPosition.CountEnemysInRange(range);
+        }
+
+        /// <summary>
+        /// Counts the enemies in range of Unit.
+        /// </summary>
+        public static int CountEnemysInRange(this Obj_AI_Base unit, int range)
+        {
+            return unit.ServerPosition.CountEnemysInRange(range);
         }
 
         /// <summary>
         /// Counts the enemies in range of point.
         /// </summary>
+        [Obsolete("Use CountEnemysInRange(this Vector3 point, int range)", false)]
         public static int CountEnemysInRange(int range, Vector3 point)
+        {
+            return
+                ObjectManager.Get<Obj_AI_Hero>()
+                    .Where(units => units.IsValidTarget())
+                    .Count(units => Vector2.Distance(point.To2D(), units.Position.To2D()) <= range);
+        }
+
+
+        /// <summary>
+        /// Counts the enemies in range of point.
+        /// </summary>
+        public static int CountEnemysInRange(this Vector3 point, int range)
         {
             return
                 ObjectManager.Get<Obj_AI_Hero>()
@@ -419,7 +477,7 @@ namespace LeagueSharp.Common
                 var angle = i * Math.PI * 2 / quality;
                 pointList.Add(
                     new Vector3(
-                        center.X + radius * (float)Math.Cos(angle), center.Y + radius * (float)Math.Sin(angle),
+                        center.X + radius * (float) Math.Cos(angle), center.Y + radius * (float) Math.Sin(angle),
                         center.Z));
             }
 
@@ -542,9 +600,9 @@ namespace LeagueSharp.Common
 
                     if (damage > unit.Health)
                     {
-                        Text.X = (int)barPos.X + XOffset;
-                        Text.Y = (int)barPos.Y + YOffset - 13;
-                        Text.text = ((int)(unit.Health - damage)).ToString();
+                        Text.X = (int) barPos.X + XOffset;
+                        Text.Y = (int) barPos.Y + YOffset - 13;
+                        Text.text = ((int) (unit.Health - damage)).ToString();
                         Text.OnEndScene();
                     }
 
