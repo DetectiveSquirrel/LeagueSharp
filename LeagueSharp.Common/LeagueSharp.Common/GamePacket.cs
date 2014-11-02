@@ -56,6 +56,19 @@ namespace LeagueSharp.Common
             _header = data[0];
         }
 
+        public GamePacket(GamePacketEventArgs args)
+        {
+            Block = false;
+            Ms = new MemoryStream(args.PacketData);
+            Br = new BinaryReader(Ms);
+            Bw = new BinaryWriter(Ms);
+
+            Br.BaseStream.Position = 0;
+            Bw.BaseStream.Position = 0;
+            rawPacket = args.PacketData;
+            _header = args.PacketData[0];
+        }
+
         public GamePacket(byte header)
         {
             Block = false;
@@ -137,22 +150,21 @@ namespace LeagueSharp.Common
         /// </summary>
         public string ReadString(long position = -1)
         {
-            var result = "";
             Position = position;
+            var sb = new StringBuilder();
 
-            for (var i = 1; i < (Size() - Position); i++)
+            for (var i = Position; i < Size(); i++)
             {
                 var num = ReadByte();
 
                 if (num == 0)
                 {
-                    return result;
+                    return sb.ToString();
                 }
-
-                result += num.ToString();
+                sb.Append(Convert.ToChar(num));
             }
 
-            return result;
+            return sb.ToString();
         }
 
 
