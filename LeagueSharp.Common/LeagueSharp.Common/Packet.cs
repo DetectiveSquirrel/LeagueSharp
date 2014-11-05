@@ -303,7 +303,8 @@ namespace LeagueSharp.Common
                 {
                     var result = new GamePacket(Header);
                     result.WriteInteger(packetStruct.SourceNetworkId);
-                    result.WriteShort(ShortFromSpellSlot(packetStruct.Slot));
+                    result.WriteByte(GetSpellByte(packetStruct.Slot));
+                    result.WriteByte((byte) packetStruct.Slot);
                     result.WriteFloat(packetStruct.FromX);
                     result.WriteFloat(packetStruct.FromY);
                     result.WriteFloat(packetStruct.ToX);
@@ -321,7 +322,8 @@ namespace LeagueSharp.Common
                     var result = new Struct();
                     packet.Position = 1;
                     result.SourceNetworkId = packet.ReadInteger();
-                    result.Slot = GetSpellSlot(packet.ReadByte(), (SpellSlot) packet.ReadByte());
+                    packet.Position++;
+                    result.Slot = (SpellSlot) packet.ReadByte();
                     result.FromX = packet.ReadFloat();
                     result.FromY = packet.ReadFloat();
                     result.ToX = packet.ReadFloat();
@@ -329,48 +331,11 @@ namespace LeagueSharp.Common
                     return result;
                 }
 
-                private static short ShortFromSpellSlot(SpellSlot slot)
-                {
-                    var newSlot = (byte) slot;
-
-                    if ((byte) slot == 0x64)
-                    {
-                        newSlot = 0x0;
-                    }
-
-                    if ((byte) slot == 0x65)
-                    {
-                        newSlot = 0x1;
-                    }
-
-                    return BitConverter.ToInt16(new byte[2] { GetSpellByte(slot), newSlot }, 0);
-                }
-
-                private static SpellSlot GetSpellSlot(byte spellByte, SpellSlot spellSlot)
-                {
-                    if (spellByte != 0xE9 && spellByte != 0xEF && spellByte != 0x8B && spellByte != 0xED &&
-                        spellByte != 0x63)
-                    {
-                        return spellSlot;
-                    }
-
-                    if (spellSlot == SpellSlot.Q)
-                    {
-                        return (SpellSlot) 0x64;
-                        //Summoner 1, this is incorrect though and should be SpellSlot.Summoner1
-                    }
-
-                    if (spellSlot == SpellSlot.W)
-                    {
-                        return (SpellSlot) 0x65;
-                        //Summoner 2, this is incorrect though and should be SpellSlot.Summoner2
-                    }
-
-                    return spellSlot;
-                }
-
                 private static byte GetSpellByte(SpellSlot spell)
                 {
+                    if(Game.Version.Contains("4.19") && (spell == ((SpellSlot) 4) || spell == ((SpellSlot) 5)))
+                      return 0xEF;
+                      
                     switch (spell)
                     {
                         case SpellSlot.Q:
@@ -397,10 +362,6 @@ namespace LeagueSharp.Common
                             return 0;
                         case SpellSlot.Recall:
                             return 0;
-                        case (SpellSlot) 0x64:
-                            return 0xEF;
-                        case (SpellSlot) 0x65:
-                            return 0xEF;
                         case SpellSlot.Unknown:
                             return 0;
                         default:
@@ -582,7 +543,9 @@ namespace LeagueSharp.Common
                         SlotByte = (byte) slotId;
                         if (SlotByte >= (byte) SpellSlot.Item1 && SlotByte <= (byte) SpellSlot.Trinket)
                         {
-                            SlotByte = (byte) (SlotByte - 4);
+
+                            var add = Game.Version.Contains("4.19") ? 6 : 4;
+                            SlotByte = (byte) (SlotByte - add);
                         }
                         NetworkId = networkId == -1 ? ObjectManager.Player.NetworkId : networkId;
                     }
@@ -2477,7 +2440,7 @@ namespace LeagueSharp.Common
 
                     result.NetworkId = packet.ReadInteger(1);
                     result.Unit = ObjectManager.GetUnitByNetworkId<Obj_AI_Base>(result.NetworkId);
-                    result.Slot = (SpellSlot)(packet.ReadByte());
+                    result.Slot = (SpellSlot) (packet.ReadByte());
                     result.UnknownByte = packet.ReadByte();
                     result.SpellString = packet.ReadString(11);
                     return result;
@@ -2487,7 +2450,7 @@ namespace LeagueSharp.Common
                 {
                     var packet = new GamePacket(Header);
                     packet.WriteInteger(pStruct.NetworkId);
-                    packet.WriteByte((byte)pStruct.Slot);
+                    packet.WriteByte((byte) pStruct.Slot);
                     packet.WriteByte(pStruct.UnknownByte);
                     packet.WriteByte(2);
                     packet.WriteByte(0, 3);
