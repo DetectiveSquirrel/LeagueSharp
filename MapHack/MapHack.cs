@@ -96,7 +96,7 @@ namespace MapHack
             {
                 foreach (Hero hero in _heroes)
                 {
-                    if (!hero.Dead && !hero.Visible)
+                    if (!hero.Dead)
                     {
                         Vector2 pos = Drawing.WorldToMinimap(hero.LastPosition);
 
