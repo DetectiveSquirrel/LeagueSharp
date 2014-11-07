@@ -53,7 +53,7 @@ namespace MapHack
             (Config = new Menu("MapHack", "Map Hack", true)).AddToMainMenu();
             Config.AddItem(new MenuItem("TextColorMH", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
             Config.AddItem(new MenuItem("OutlineColorMH", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
-            Config.AddItem(new MenuItem("substringMH", "Amount of Letters").SetValue(new Slider(3, 0, 15)));
+            Config.AddItem(new MenuItem("substringMH", "Amount of Letters").SetValue(new Slider(3, 3, 4)));
             
         }
 
@@ -96,7 +96,7 @@ namespace MapHack
             {
                 foreach (Hero hero in _heroes)
                 {
-                    if (!hero.Dead)
+                    if (!hero.Dead && !hero.Visible)
                     {
                         Vector2 pos = Drawing.WorldToMinimap(hero.LastPosition);
 
