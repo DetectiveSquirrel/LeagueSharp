@@ -53,6 +53,8 @@ namespace MapHack
             (Config = new Menu("MapHack", "Map Hack", true)).AddToMainMenu();
             Config.AddItem(new MenuItem("TextColorMH", "Text Color").SetValue(new Circle(true, Color.FromArgb(255, 255, 255, 0))));
             Config.AddItem(new MenuItem("OutlineColorMH", "Outline Color").SetValue(new Circle(true, Color.FromArgb(255, 0, 0, 0))));
+            Config.AddItem(new MenuItem("substringMH", "Amount of Letters")..SetValue(new Slider(3, 0, 15)));
+            
         }
 
         private void OnGameUpdate(EventArgs args)
@@ -101,12 +103,12 @@ namespace MapHack
                         var OutlineColor = Config.Item("OutlineColorMH").GetValue<Circle>();
                         var TextColor = Config.Item("TextColorMH").GetValue<Circle>();
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 4));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 4));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 + 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 4));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 - 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 4));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value).Length*5 + 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value).Length*5 - 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value));
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5), pos.Y - 7, TextColor.Color, hero.Name.Substring(0, 4));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value).Length*5), pos.Y - 7, TextColor.Color, hero.Name.Substring(0, Config.Item("substringMH").GetValue<Slider>().Value));
                     }
                 }
             }
