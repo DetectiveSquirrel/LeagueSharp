@@ -101,12 +101,12 @@ namespace MapHack
                         var OutlineColor = Config.Item("OutlineColorMH").GetValue<Circle>();
                         var TextColor = Config.Item("TextColorMH").GetValue<Circle>();
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 + 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5 - 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 - 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 + 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 + 1), pos.Y - 6, OutlineColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5 - 1), pos.Y - 8, OutlineColor.Color, hero.Name.Substring(0, 3));
 
-                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 3).Length*5), pos.Y - 7, TextColor.Color, hero.Name.Substring(0, 3));
+                        Drawing.DrawText(pos.X - Convert.ToInt32(hero.Name.Substring(0, 4).Length*5), pos.Y - 7, TextColor.Color, hero.Name.Substring(0, 3));
                     }
                 }
             }
