@@ -42,6 +42,8 @@ namespace LeagueSharp.Common
         private readonly MemoryStream Ms;
         private readonly byte _header;
         private readonly byte[] rawPacket;
+        public PacketChannel Channel = PacketChannel.C2S;
+        public PacketProtocolFlags Flags = PacketProtocolFlags.Reliable;
 
         public GamePacket(byte[] data)
         {
@@ -67,6 +69,8 @@ namespace LeagueSharp.Common
             Bw.BaseStream.Position = 0;
             rawPacket = args.PacketData;
             _header = args.PacketData[0];
+            Channel = args.Channel;
+            Flags = args.ProtocolFlag;
         }
 
         public GamePacket(byte header)
@@ -350,7 +354,7 @@ namespace LeagueSharp.Common
         /// Sends the packet
         /// </summary>
         public void Send(PacketChannel channel = PacketChannel.C2S,
-            PacketProtocolFlags flags = PacketProtocolFlags.NoFlags)
+            PacketProtocolFlags flags = PacketProtocolFlags.Reliable)
         {
             if (!Block)
             {

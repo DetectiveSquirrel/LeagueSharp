@@ -31,6 +31,4 @@ Lizzaran
 https://github.com/Lizzaran/LeagueSharp
 <h5>MapHack:</h5>
 - Added Color Picker for full customisation.
-
-<h5>Jungle Timers:</h5>
-- Added Color Picker for full customisation.
+- Added Text Limit slider due to a bug with little amount of letters not showing up (Min:2 || Max:4)
