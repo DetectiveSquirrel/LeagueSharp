@@ -92,7 +92,7 @@ namespace LeagueSharp.Common
                 {
                     ChampionName = "Caitlyn",
                     SpellName = "CaitlynAceintheHole",
-                    DangerLevel = InterruptableDangerLevel.Medium,
+                    DangerLevel = InterruptableDangerLevel.High,
                     Slot = SpellSlot.R,
                     BuffName = "CaitlynAceintheHole",
                     ExtraDuration = 600
@@ -303,6 +303,20 @@ namespace LeagueSharp.Common
                     BuffName = "ReapTheWhirlwind",
                     Slot = SpellSlot.R,
                     DangerLevel = InterruptableDangerLevel.Low,
+                });
+
+            #endregion
+            
+            #region Lucian
+
+            Spells.Add(
+                new InterruptableSpell
+                {
+                    ChampionName = "Lucian",
+                    SpellName = "LucianR",
+                    DangerLevel = InterruptableDangerLevel.High,
+                    Slot = SpellSlot.R,
+                    BuffName = "LucianR"
                 });
 
             #endregion
