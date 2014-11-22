@@ -120,7 +120,7 @@ namespace LeagueSharp.Common
 //FE 19 00 00 40 25 01 00 00 07 00 00 00 06 FB 16 00 40 56 04 00 40 B2 04 00 40 B2 04 00 40 56 05 00 40 FB 16 00 40
 //FE 19 00 00 40 25 01 00 00 07 00 00 00 06 56 04 00 40 B2 04 00 40 B2 04 00 40 56 05 00 40 56 05 00 40 FB 16 00 40
             NPCDeath = 0x26, //confirmed in ida, struct from intwars/ida
-
+            Unknown2E = 0x2E, //confirmed in ida
             AddBuff = 0x04, // buff added by towers in new SR
 
             //FE 19 00 00 40 07 01 00 01 00 00 00 02 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00
@@ -348,11 +348,6 @@ namespace LeagueSharp.Common
 
                 private static byte GetSpellByte(SpellSlot spell)
                 {
-                    if (Game.Version.Contains("4.19") && (spell == ((SpellSlot) 4) || spell == ((SpellSlot) 5)))
-                    {
-                        return 0xEF;
-                    }
-
                     switch (spell)
                     {
                         case SpellSlot.Q:
@@ -532,44 +527,38 @@ namespace LeagueSharp.Common
                 {
                     var result = new GamePacket(Header);
                     result.WriteInteger(packetStruct.NetworkId);
-                    result.WriteByte(packetStruct.SlotByte);
+                    result.WriteByte(packetStruct.InventorySlot);
                     result.WriteByte(1);
                     return result;
                 }
 
                 public static Struct Decoded(byte[] data)
                 {
-                    var packet = new GamePacket(data);
-                    var result = new Struct();
-                    packet.Position = 1;
-                    result.NetworkId = packet.ReadInteger();
-                    result.SlotByte = packet.ReadByte();
-                    result.SlotId = (SpellSlot) (result.SlotByte + 4);
-                    return result;
+                    var packet = new GamePacket(data) { Position = 1 };
+                    var networkId = packet.ReadInteger();
+                    var slot = packet.ReadByte();
+
+                    return new Struct(slot, networkId);
                 }
 
                 public struct Struct
                 {
+                    public byte InventorySlot;
                     public int NetworkId;
-                    public byte SlotByte;
-                    public SpellSlot SlotId;
+                    public SpellSlot SpellSlot;
 
-                    public Struct(SpellSlot slotId, int networkId = -1)
+                    public Struct(byte slot, int networkId = -1)
                     {
-                        SlotId = slotId;
-                        SlotByte = (byte) slotId;
-                        if (SlotByte >= (byte) SpellSlot.Item1 && SlotByte <= (byte) SpellSlot.Trinket)
-                        {
-                            var add = Game.Version.Contains("4.19") ? 6 : 4;
-                            SlotByte = (byte) (SlotByte - add);
-                        }
+                        InventorySlot = slot;
+                        SpellSlot = (SpellSlot) (InventorySlot + (byte) SpellSlot.Item1);
                         NetworkId = networkId == -1 ? ObjectManager.Player.NetworkId : networkId;
                     }
 
-                    public Struct(byte slotByte, int networkId = -1)
+
+                    public Struct(SpellSlot slot, int networkId = -1)
                     {
-                        SlotByte = slotByte;
-                        SlotId = (SpellSlot) slotByte;
+                        SpellSlot = slot;
+                        InventorySlot = (byte) ((byte) SpellSlot - (byte) SpellSlot.Item1);
                         NetworkId = networkId == -1 ? ObjectManager.Player.NetworkId : networkId;
                     }
                 }
@@ -2336,6 +2325,7 @@ namespace LeagueSharp.Common
 
             #endregion
 
+
             #region SetCoodlown
 
             /// <summary>
@@ -2343,7 +2333,7 @@ namespace LeagueSharp.Common
             /// </summary>
             public class SetCooldown
             {
-                public static byte Header = 0x84;
+                public static byte Header = 0x85;
 
                 public static Struct Decoded(byte[] data)
                 {
@@ -2388,6 +2378,39 @@ namespace LeagueSharp.Common
                         TotalCooldown = totalCd;
                         CurrentCooldown = currentCd;
                     }
+                }
+            }
+
+            #endregion
+
+            #region StartItemCooldown
+
+            /// <summary>
+            ///     One packet that starts cooldown (mostly for items).
+            /// </summary>
+            public class StartItemCooldown
+            {
+                public static byte Header = 0x9F;
+
+                public static Struct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var result = new Struct();
+
+                    result.NetworkId = packet.ReadInteger(1);
+                    result.Unit = ObjectManager.GetUnitByNetworkId<Obj_AI_Base>(result.NetworkId);
+                    result.InventorySlot = packet.ReadByte();
+                    result.SpellSlot = (SpellSlot) (result.InventorySlot + (byte) SpellSlot.Item1);
+                    return result;
+                }
+
+
+                public struct Struct
+                {
+                    public int NetworkId;
+                    public SpellSlot SpellSlot;
+                    public byte InventorySlot;
+                    public Obj_AI_Base Unit;
                 }
             }
 
@@ -2622,6 +2645,40 @@ namespace LeagueSharp.Common
                     public Obj_AI_Base SourceUnit;
                 }
             }
+
+            #endregion
+
+            #region LevelUp
+
+            /// <summary>
+            ///     Received on hero level up.
+            /// </summary>
+            public class LevelUp
+            {
+                public static byte Header = 0x3F;
+
+                public static Struct Decoded(byte[] data)
+                {
+                    var packet = new GamePacket(data);
+                    var result = new Struct();
+
+                    result.NetworkId = packet.ReadInteger(1);
+                    result.Unit = ObjectManager.GetUnitByNetworkId<Obj_AI_Hero>(result.NetworkId);
+                    result.Level = packet.ReadByte();
+                    result.PointsLeft = packet.ReadByte();
+
+                    return result;
+                }
+
+                public struct Struct
+                {
+
+                    public int NetworkId;
+                    public int Level;
+                    public int PointsLeft;
+                    public Obj_AI_Hero Unit;
+            }
+        }
 
             #endregion
         }
