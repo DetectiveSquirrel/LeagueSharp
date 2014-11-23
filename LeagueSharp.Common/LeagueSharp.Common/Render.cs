@@ -114,6 +114,8 @@ namespace LeagueSharp.Common
                 return;
             }
 
+            Device.SetRenderState(RenderState.AlphaBlendEnable, true);
+
             for (var i = -5; i < 5; i++)
             {
                 foreach (var renderObject in
