@@ -71,13 +71,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LeagueSharp">
-      <HintPath>C:\Users\Tuba\Desktop\LeagueSharp\\System\LeagueSharp.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\LeagueSharp\\System\LeagueSharp.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>C:\Users\Tuba\Desktop\LeagueSharp\\System\SharpDX.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\LeagueSharp\\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
-      <HintPath>C:\Users\Tuba\Desktop\LeagueSharp\\System\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\LeagueSharp\\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -103,6 +103,7 @@
     <Compile Include="Interrupter.cs" />
     <Compile Include="LastCastedSpell.cs" />
     <Compile Include="Menu.cs" />
+    <Compile Include="MenuWrapper.cs" />
     <Compile Include="Orbwalking.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Prediction.cs" />
